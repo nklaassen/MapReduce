@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -27,6 +28,11 @@ pair<string, int> reducer(vector<pair<string, int>> keyVals)
 }
 void outputer(vector<pair<string, int>> keyVals)
 {
+	std::sort(keyVals.rbegin(), keyVals.rend(),
+			[](const pair<string, int> &a, const pair<string, int> &b) {
+				return a.second < b.second;
+			});
+
 	for (auto i : keyVals) {
 		cout << i.first << ":\t" << i.second << endl;
 	}
@@ -35,7 +41,7 @@ void outputer(vector<pair<string, int>> keyVals)
 int main(int argc, char **argv)
 {
 	if (argc < 2) {
-		cerr << "format: " << argv[0] << "filename" << endl;
+		cerr << "format: " << argv[0] << " filename" << endl;
 		return 1;
 	}
 
