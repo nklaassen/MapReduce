@@ -10,32 +10,33 @@
 
 using namespace std;
 
-vector<string> inputReader(ifstream &input)
+vector<pair<int, string>> inputReader(ifstream input)
 {
-	auto vec = vector<string>();
-	string str;
-	while (input >> str) {
-		vec.push_back(str);
+	auto vec = vector<pair<int, string>>();
+	string word;
+	for (int i = 0; input >> word; i++) {
+		vec.emplace_back(i, word);
 	}
 	return vec;
 }
-pair<string, int> mapper(string key)
+vector<pair<string, int>> mapper(int wordNum, string word)
 {
-	return pair<string, int>(key, 1);
+	(void) wordNum;
+	return { make_pair(word, 1) };
 }
-pair<string, int> reducer(vector<pair<string, int>> keyVals)
+pair<string, int> reducer(string word, vector<int> counts)
 {
-	return pair<string, int>(keyVals[0].first, keyVals.size());
+	return make_pair(word, counts.size());
 }
-void outputer(vector<pair<string, int>> keyVals)
+void outputer(vector<pair<string, int>> wordCounts)
 {
-	std::sort(keyVals.rbegin(), keyVals.rend(),
+	std::sort(wordCounts.rbegin(), wordCounts.rend(),
 			[](const pair<string, int> &a, const pair<string, int> &b) {
 				return a.second < b.second;
 			});
 
-	for (auto i : keyVals) {
-		cout << i.first << ":\t" << i.second << endl;
+	for (auto wordCount : wordCounts) {
+		cout << wordCount.first << ":\t" << wordCount.second << endl;
 	}
 }
 
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
 		return 2;
 	}
 
-	MapReducer<ifstream&, string, int> wordCounter(inputReader, mapper, reducer, outputer);
+	MapReducer<ifstream, int, string, string, int> wordCounter(inputReader, mapper, reducer, outputer);
 
-	wordCounter.mapReduce(input);
+	wordCounter.mapReduce(move(input));
 }

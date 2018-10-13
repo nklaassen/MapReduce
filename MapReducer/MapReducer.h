@@ -4,16 +4,35 @@
 #include <vector>
 #include <utility>
 #include <map>
+#include <thread>
 
-template <class Input, class Key, class Val>
+using namespace std;
+
+const int k_numThreads = 4;
+void distribute(function<void(int)> f)
+{
+	vector<thread> threads;
+	for (int threadNum = 0; threadNum < k_numThreads; threadNum++) {
+		threads.emplace_back([=] { f(threadNum); });
+	}
+	for (auto &thread : threads) {
+		thread.join();
+	}
+}
+
+template <class Input, class Key1, class Val1, class Key2, class Val2>
 class MapReducer
 {
+	using InputReaderFunc = function<vector<pair<Key1, Val1>>(Input)>;
+	using MapFunc = function<vector<pair<Key2, Val2>>(Key1, Val1)>;
+	using ReduceFunc = function<pair<Key2, Val2>(Key2, vector<Val2>)>;
+	using OutputFunc = function<void(vector<pair<Key2, Val2>>)>;
 	public:
 		MapReducer(
-				std::function<std::vector<Key>(Input)> inputReader,
-				std::function<std::pair<Key, Val>(Key)> mapper,
-				std::function<std::pair<Key, Val>(std::vector<std::pair<Key, Val>>)> reducer,
-				std::function<void(std::vector<std::pair<Key, Val>>)> outputer) :
+				InputReaderFunc inputReader,
+				MapFunc mapper,
+				ReduceFunc reducer,
+				OutputFunc outputer) :
 			inputReader(inputReader),
 			mapper(mapper),
 			reducer(reducer),
@@ -22,21 +41,34 @@ class MapReducer
 
 		void mapReduce(Input input)
 		{
-			auto keys = inputReader(input);
-			std::map<Key, std::vector<std::pair<Key, Val>>> keyValsMap;
-			for (auto key : keys) {
-				keyValsMap[key].push_back(mapper(key));
+			vector<pair<Key1, Val1>> inputs = inputReader(move(input));
+			vector<pair<Key2, Val2>> mapOutputs[inputs.size()]; // array of vectors
+			distribute([&](int offset) {
+				for (size_t i = offset; i < inputs.size(); i += k_numThreads) {
+					mapOutputs[i] = mapper(inputs[i].first, move(inputs[i].second));
+				}
+			});
+			map<Key2, vector<Val2>> mapOutputGroups;
+			for (auto &mapOutput : mapOutputs) {
+				for (auto &k2v2 : mapOutput) {
+					mapOutputGroups[k2v2.first].push_back(k2v2.second);
+				}
 			}
-			std::vector<std::pair<Key, Val>> keyVals;
-			for (auto kvs : keyValsMap) {
-				keyVals.push_back(reducer(kvs.second));
-			}
-			outputer(keyVals);
+			vector<pair<Key2, Val2>> outputs(mapOutputGroups.size());
+			distribute([&](int offset) {
+				auto mapOutputGroup = mapOutputGroups.begin();
+				advance(mapOutputGroup, offset);
+				for (size_t i = offset; i < mapOutputGroups.size(); i += k_numThreads) {
+					outputs[i] = reducer(mapOutputGroup->first, move(mapOutputGroup->second));
+					advance(mapOutputGroup, k_numThreads);
+				}
+			});
+			outputer(move(outputs));
 		}
 
 	private:
-		std::function<std::vector<Key>(Input)> const inputReader;
-		std::function<std::pair<Key, Val>(Key)> const mapper;
-		std::function<std::pair<Key, Val>(std::vector<std::pair<Key, Val>>)> const reducer;
-		std::function<void(std::vector<std::pair<Key, Val>>)> const outputer;
+		InputReaderFunc const inputReader;
+		MapFunc const mapper;
+		ReduceFunc const reducer;
+		OutputFunc const outputer;
 };
