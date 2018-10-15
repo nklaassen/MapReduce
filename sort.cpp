@@ -14,64 +14,74 @@
 
 using namespace std;
 
-using IntVec = vector<int>;
-using Int_IntVec = pair<int, IntVec>;
+struct VecView
+{
+	vector<int>::iterator begin;
+	vector<int>::iterator end;
+	size_t size() { return distance(begin, end); }
+	VecView(vector<int>::iterator begin, vector<int>::iterator end)
+		: begin(begin)
+		, end(end)
+	{}
+	VecView()
+	{}
+};
 
-vector<Int_IntVec> inputReader(IntVec const& input)
+vector<pair<int, VecView>> inputReader(VecView input)
 {
 	auto const numChunks = 4;
 	auto chunkSize = input.size() / numChunks + 1;
-	vector<pair<int,IntVec>> vec;
+	vector<pair<int, VecView>> vec;
 	for (auto i = 0; i < numChunks - 1; i++) {
-		vec.emplace_back(i, IntVec(input.begin() + i * chunkSize, input.begin() + (i+1) * chunkSize));
+		vec.emplace_back(i, VecView(input.begin + i * chunkSize, input.begin + (i+1) * chunkSize));
 	}
-	vec.emplace_back(numChunks - 1, IntVec(input.begin() + (numChunks - 1) * chunkSize, input.end()));
+	vec.emplace_back(numChunks - 1, VecView(input.begin + (numChunks - 1) * chunkSize, input.end));
 	return vec;
 }
-vector<Int_IntVec> mapper(int chunkId, IntVec chunk)
+vector<pair<int, VecView>> mapper(int chunkId, VecView chunk)
 {
-	sort(chunk.begin(), chunk.end());
-	return { make_pair(chunkId / 2, move(chunk)) };
+	sort(chunk.begin, chunk.end);
+	return { make_pair(chunkId / 2, chunk) };
 }
-Int_IntVec reducer(int chunksId, vector<IntVec> sortedChunks)
+pair<int, VecView> reducer(int chunksId, vector<VecView> sortedChunks)
 {
-	IntVec output;
-	merge(
-		sortedChunks[0].begin(), sortedChunks[0].end(),
-		sortedChunks[1].begin(), sortedChunks[1].end(),
-		back_inserter(output));
-	return make_pair(chunksId, move(output));
+	VecView a = sortedChunks[0], b = sortedChunks[1];
+	if (distance(a.begin, b.begin) < 0)
+		swap(a, b);
+	inplace_merge(a.begin, a.end, b.end);
+	return make_pair(chunksId, VecView(a.begin, b.end));
 }
-void outputer(IntVec& output, vector<Int_IntVec> sortedChunks)
+void outputer(vector<pair<int, VecView>> sortedChunks)
 {
-	merge(
-		sortedChunks[0].second.begin(), sortedChunks[0].second.end(),
-		sortedChunks[1].second.begin(), sortedChunks[1].second.end(),
-		back_inserter(output));
+	VecView a = sortedChunks[0].second, b = sortedChunks[1].second;
+	if (distance(a.begin, b.begin) < 0)
+		swap(a, b);
+	inplace_merge(a.begin, a.end, b.end);
 }
 
 int main()
 {
 	size_t const size = 100000000;
 
-	cout << "sorting " << size << " integers" << endl;
-
-	IntVec input(size);
-	IntVec output;
-	output.reserve(size);
-
-	MapReducer<IntVec, int, IntVec, int, IntVec> sorter(
+	MapReducer<VecView, int, VecView, int, VecView> sorter(
 			inputReader,
 			mapper,
 			reducer,
-			[&] (vector<Int_IntVec> a) { outputer(output, a); });
+			outputer);
 
+	vector<int> vec1(size);
+	vector<int> vec2(size);
 
 	srand(0xdeadbeef);
-	for_each(input.begin(), input.end(), [](int &i) { i = rand(); });
+	for (size_t i = 0; i < size; i++) {
+		int num = rand();
+		vec1[i] = vec2[i] = num;
+	}
+
+	cout << "sorting " << size << " integers" << endl;
 
 	auto mapReduceStart = chrono::high_resolution_clock::now();
-	sorter.mapReduce(move(input));
+	sorter.mapReduce(VecView(vec1.begin(), vec1.end()));
 	auto mapReduceFinish = chrono::high_resolution_clock::now();
 
 	cout << "MapReduce time:\t"
@@ -79,12 +89,8 @@ int main()
 		<< "ms"
 		<< endl;
 
-	IntVec vec(size);
-	srand(0xdeadbeef);
-	for_each(vec.begin(), vec.end(), [](int &i) { i = rand(); });
-
 	auto stlSortStart = chrono::high_resolution_clock::now();
-	sort(vec.begin(), vec.end());
+	sort(vec2.begin(), vec2.end());
 	auto stlSortFinish = chrono::high_resolution_clock::now();
 
 	cout << "std::sort time:\t"
@@ -92,5 +98,5 @@ int main()
 		<< "ms"
 		<< endl;
 
-	cout << "ouputs match ? " << (vec == output) << endl;
+	cout << "ouputs match ? " << (vec1 == vec2) << endl;
 }
