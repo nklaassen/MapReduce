@@ -1,4 +1,4 @@
-#include "MapReducer.h"
+#include "MapReducer/MapReducer.hpp"
 
 #include <iostream>
 #include <functional>
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 		return 2;
 	}
 
-	MapReducer<ifstream, int, string, string, int> wordCounter(inputReader, mapper, reducer, outputer);
+	MapReducer<ifstream, int, string, string, int, int> wordCounter(inputReader, mapper, reducer, outputer);
 
 	wordCounter.mapReduce(move(input));
 }
