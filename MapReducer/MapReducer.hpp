@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <functional>
 #include <vector>
 #include <utility>
@@ -8,7 +9,7 @@
 
 using namespace std;
 
-const int k_numThreads = 4;
+const int k_numThreads = 1;
 void distribute(function<void(int)> f)
 {
 	vector<thread> threads;
@@ -20,13 +21,13 @@ void distribute(function<void(int)> f)
 	}
 }
 
-template <class Input, class Key1, class Val1, class Key2, class Val2>
+template <class Input, class Key1, class Val1, class Key2, class Val2, class Val3>
 class MapReducer
 {
 	using InputReaderFunc = function<vector<pair<Key1, Val1>>(Input)>;
 	using MapFunc = function<vector<pair<Key2, Val2>>(Key1, Val1)>;
-	using ReduceFunc = function<pair<Key2, Val2>(Key2, vector<Val2>)>;
-	using OutputFunc = function<void(vector<pair<Key2, Val2>>)>;
+	using ReduceFunc = function<pair<Key2, Val3>(Key2, vector<Val2>)>;
+	using OutputFunc = function<void(vector<pair<Key2, Val3>>)>;
 	public:
 		MapReducer(
 				InputReaderFunc inputReader,
@@ -42,19 +43,25 @@ class MapReducer
 		void mapReduce(Input input)
 		{
 			vector<pair<Key1, Val1>> inputs = inputReader(move(input));
+
+                        // Map stage
 			vector<pair<Key2, Val2>> mapOutputs[inputs.size()]; // array of vectors
 			distribute([&](int offset) {
 				for (size_t i = offset; i < inputs.size(); i += k_numThreads) {
 					mapOutputs[i] = mapper(inputs[i].first, move(inputs[i].second));
 				}
 			});
+                        
+                        // Shuffle stage
 			map<Key2, vector<Val2>> mapOutputGroups;
 			for (auto &mapOutput : mapOutputs) {
 				for (auto &k2v2 : mapOutput) {
 					mapOutputGroups[k2v2.first].push_back(k2v2.second);
 				}
 			}
-			vector<pair<Key2, Val2>> outputs(mapOutputGroups.size());
+
+                        // Reduce stage
+			vector<pair<Key2, Val3>> outputs(mapOutputGroups.size());
 			distribute([&](int offset) {
 				auto mapOutputGroup = mapOutputGroups.begin();
 				advance(mapOutputGroup, offset);
