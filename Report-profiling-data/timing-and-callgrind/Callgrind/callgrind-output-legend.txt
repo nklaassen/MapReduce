@@ -1,0 +1,4 @@
+callgrind.out.41888 = part 3 | lipsum 50, 1 thread
+
+callgrind.out.41928 = part 4 | lipsum 50, 4 threads
+callgrind.out.77530 = part 4 | lipsum 50, 12 threads
