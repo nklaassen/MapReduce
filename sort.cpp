@@ -61,42 +61,40 @@ void outputer(vector<pair<int, VecView>> sortedChunks)
 
 int main()
 {
-	size_t const size = 100000000;
-
 	MapReducer<VecView, int, VecView, int, VecView> sorter(
 			inputReader,
 			mapper,
 			reducer,
 			outputer);
 
-	vector<int> vec1(size);
-	vector<int> vec2(size);
-
 	srand(0xdeadbeef);
-	for (size_t i = 0; i < size; i++) {
-		int num = rand();
-		vec1[i] = vec2[i] = num;
+
+	// output timing data in csv format
+	cout << "array size, MapReduce, std::sort" << endl;
+
+	for (int size = 100000; size <= 400000; size *= 2) {
+		vector<int> vec1(size);
+		vector<int> vec2(size);
+		for (int i = 0; i < 100; i++) {
+			// initialize arrays to random data
+			for (int i = 0; i < size; i++) {
+				vec1[i] = vec2[i] = rand();
+			}
+
+			// time mapReduce sort
+			auto mapReduceStart = chrono::high_resolution_clock::now();
+			sorter.mapReduce(VecView(vec1.begin(), vec1.end()));
+			auto mapReduceFinish = chrono::high_resolution_clock::now();
+
+			// time std::sort
+			auto stlSortStart = chrono::high_resolution_clock::now();
+			std::sort(vec2.begin(), vec2.end());
+			auto stlSortFinish = chrono::high_resolution_clock::now();
+
+			cout << size
+				<< "," << chrono::duration_cast<chrono::microseconds>(mapReduceFinish - mapReduceStart).count()
+				<< "," << chrono::duration_cast<chrono::microseconds>(stlSortFinish - stlSortStart).count()
+				<< endl;
+		}
 	}
-
-	cout << "sorting " << size << " integers" << endl;
-
-	auto mapReduceStart = chrono::high_resolution_clock::now();
-	sorter.mapReduce(VecView(vec1.begin(), vec1.end()));
-	auto mapReduceFinish = chrono::high_resolution_clock::now();
-
-	cout << "MapReduce time:\t"
-		<< chrono::duration_cast<chrono::milliseconds>(mapReduceFinish - mapReduceStart).count()
-		<< "ms"
-		<< endl;
-
-	auto stlSortStart = chrono::high_resolution_clock::now();
-	sort(vec2.begin(), vec2.end());
-	auto stlSortFinish = chrono::high_resolution_clock::now();
-
-	cout << "std::sort time:\t"
-		<< chrono::duration_cast<chrono::milliseconds>(stlSortFinish - stlSortStart).count()
-		<< "ms"
-		<< endl;
-
-	cout << "ouputs match ? " << (vec1 == vec2) << endl;
 }
