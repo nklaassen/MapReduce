@@ -156,10 +156,27 @@
 	\end{table}
 \subsection{Comparison}
 	An increase in threads used in the implementation of word counts appears to correspond with a decrease in time spent performing CPU calls and an increase in time spent in the program itself. As for wall time, there was not a clear difference between implementations - the single-threaded implementation came in with a mean wall time of 0.0140 seconds, the four-threaded MapReduce implementation with a mean wall time of 0.0190 seconds, and the twelve-threaded MapReduce implementation with a mean wall time of 0.0120 seconds.
+	
+\section{Alternate Workload}
+In addition to the sort program, a matrix multiplication algorithm was also adapted to the MapReduce interface . The algorithm is described in detail in the blog post “Matrix Multiplication with MapReduce”\footnote{https://lendap.wordpress.com/2015/02/16/matrix-multiplication-with-mapreduce/}
+
+The algorithm is intended for multiplying very large, sparse matrices (hundreds of thousands or millions or rows and columns) and distributing the task over many machines. Because of the permutative nature of matrix multiplication this requires significant duplication of data. The mapper stage copies every element of A for every column in B and every element in B for every row in A. Mapreduce makes this copying necessary because each worker in the reduce stage has access only to it’s individual piece of the data. 
+
+On a single machine, in a multithreaded context, the mapreduce matrix multiplication operation took ~100 times as long as the implementation found in the NumPy numerical computation package for Python, for a 100x100 matrix. Naturally, it also consumed significantly more memory. 
+
+In a distributed system, the workers cannot share memory, so the copying done by the mapreduce method is likely a lower bound on the amount of copying necessary for any distributed method. Since the workers are responsible for the copying, each value only needs to be transmitted once in the input stage. 
+
+	
 \section{Most appropriate workload for MapReduce}
+Our investigation confirmed that MapReduce is most suitable for applications where:
+\begin{itemize}
+\item The input data can be partitioned into discrete pieces which can be operated on in isolation. 
+\item The computation required for each piece is significant enough to overcome the overhead of partitioning, distributing and then recombining the data. 
+\end{itemize}
 	
 \section{Impact of using multiple machines on execution speed}
-	
+The primary difference between a multi-machine implementation and a local, multi-threaded implementation is that the overhead of moving data during the input, shuffle, and output stages is much higher when moving data between machines, versus merely moving data around in local memory. This increases the importance of the suitability criteria described above. 
+
 \newpage
 	\begin{figure}[h]
 	\centering
