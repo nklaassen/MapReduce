@@ -168,9 +168,15 @@ In a distributed system, the workers cannot share memory, so the copying done by
 
 	
 \section{Most appropriate workload for MapReduce}
+Our investigation confirmed that MapReduce is most suitable for applications where:
+\begin{itemize}
+\item The input data can be partitioned into discrete pieces which can be operated on in isolation. 
+\item The computation required for each piece is significant enough to overcome the overhead of partitioning, distributing and then recombining the data. 
+\end{itemize}
 	
 \section{Impact of using multiple machines on execution speed}
-	
+The primary difference between a multi-machine implementation and a local, multi-threaded implementation is that the overhead of moving data during the input, shuffle, and output stages is much higher when moving data between machines, versus merely moving data around in local memory. This increases the importance of the suitability criteria described above. 
+
 \newpage
 	\begin{figure}[h]
 	\centering
