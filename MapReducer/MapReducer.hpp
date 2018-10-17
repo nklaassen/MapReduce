@@ -9,7 +9,7 @@
 
 using namespace std;
 
-const int k_numThreads = 1;
+const int k_numThreads = 4;
 void distribute(function<void(int)> f)
 {
 	vector<thread> threads;
@@ -44,15 +44,15 @@ class MapReducer
 		{
 			vector<pair<Key1, Val1>> inputs = inputReader(move(input));
 
-                        // Map stage
+			// Map stage
 			vector<pair<Key2, Val2>> mapOutputs[inputs.size()]; // array of vectors
 			distribute([&](int offset) {
 				for (size_t i = offset; i < inputs.size(); i += k_numThreads) {
 					mapOutputs[i] = mapper(inputs[i].first, move(inputs[i].second));
 				}
 			});
-                        
-                        // Shuffle stage
+
+			// Shuffle stage
 			map<Key2, vector<Val2>> mapOutputGroups;
 			for (auto &mapOutput : mapOutputs) {
 				for (auto &k2v2 : mapOutput) {
@@ -60,7 +60,7 @@ class MapReducer
 				}
 			}
 
-                        // Reduce stage
+			// Reduce stage
 			vector<pair<Key2, Val3>> outputs(mapOutputGroups.size());
 			distribute([&](int offset) {
 				auto mapOutputGroup = mapOutputGroups.begin();
