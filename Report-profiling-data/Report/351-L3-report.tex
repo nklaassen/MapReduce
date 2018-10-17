@@ -6,6 +6,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[table,xcdraw]{xcolor}
+\usepackage{booktabs}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 % title
@@ -15,14 +16,54 @@
 \author{Galen Elfert, Nic Klaassen, Diane Wolf}
 \maketitle
 % text
-\section{Explanation of workload}
-	The workload invented to fit the MapReduce framework better than word counts was {[matrix multiplication | distributed sort problem | merge sort problem]...}
+\section{Explanation of Workload}
+	The workload we designed as a better fit for the MapReduce framework is a distributed merge sort.
+
 \subsection{Conception}
-	{[Matrix multiplication | distributed sort problem | merge sort problem]} was chosen as a better alternative to word counts because...
-\subsection{Speed: Single-threaded implementation}
-	
-\subsection{Speed: MapReduce implementation}
-\subsection{Comparison}
+	In the word count implementation, the highly-parallelised map function does virtually no work, and the overhead of spinning up threads and copying the inputs/outputs far outweighs any possible performance benefit.
+	Looking for a better workload, we wanted to find an algorithm where a large amount of computation needs to be completed, and that computation can be broken down into discrete parts that can be completed in parallel.
+	We also wanted to find an algorithm with a good use for the reduce stage, where some non-trivial amount of work needs to be done combining outputs from the map stage.
+	Sorting was chosen as a better alternative to word counts, because it is a somewhat compute-heavy problem that can be easily broken down into chunks that need to be merged together.
+
+	For our distributed merge sort implementation, an array of size $ n $ is broken up into 4 chunks of size $ n/4 $, which are all sorted in parallel in the map stage.
+	In the reduce stage, pairs of sorted chunks of the original array are merged into 2 chunks of size $ n/2 $, these 2 merges are also completed in parallel.
+	A potential bottleneck in this implementation is the output stage, which must do a final merge of the last 2 chunks of size $ n/2 $.
+
+	In the limit, this algorithm can theoritically achieve a 4x speedup over a traditional merge sort based on equation~\ref{eq:sort}.
+	\begin{equation} \label{eq:sort}
+	\lim_{n\to\infty} \frac{\frac{n\log{n} - 2n}{4} + \frac{n}{2} + n}{n\log{n}} = \frac{1}{4}
+	\end{equation}
+	Intuitively, only $O(n)$ work needs to be done sequentially in the 2 merge steps, while the rest of the $O(n\log{n})$ sort is done concurrently on 4 cores.
+
+\subsection{Speed Comparison vs \texttt{std::sort}}
+	In practice, our algorithm achieved a 2.13x speedup over a single-threaded \texttt{std::sort}, on arrays of size 100,000 to 400,000.
+	While somewhat less than predicted, this level of speedup is fairly good considering the degree of optimization in \texttt{std::sort} and the typical losses involved with threading.
+	Timing data for our MapReduce sort vs \texttt{std::sort} on various array sizes is shown in figure~\ref{fig:sort-timing}. Times are averaged over 100 runs.
+
+	\begin{figure}[!h]
+	\centering
+	\includegraphics[width=0.75\textwidth]{sort-timing}
+	\caption{MapReduce Sorting vs std::sort\label{fig:sort-timing}}
+	\end{figure}
+
+\subsection{Compared with Word Count}
+	The main reason this algorithm is a better fit for MapReduce than word count is that it does much more of its work in the map and reduce stages, which are executed in parallel.
+	We analyzed this behaviour in callgrind and found that our MapReduce sorting algorithm does over 85\% of its computation in the map stage.
+	A complete breakdown is shown in table~\ref{table:sortVwordcount}.
+
+	\begin{table}[!h]\centering
+	\renewcommand{\arraystretch}{1.3}
+		\begin{tabular}{@{}lllll@{}}
+			\toprule
+			 & input stage & map stage & reduce stage & output stage\\ \midrule
+			word count	&11.28\%	&11.72\%	&0.47\%	&11.21\%\\
+			sort		&0.00\%		&85.71\%	&5.30\%	&4.76\%	\\
+			\bottomrule
+		\end{tabular}
+		\caption{Word Count vs Sorting\label{table:sortVwordcount}}
+	\end{table}
+
+
 \section{Word count efficiency}
 	Both implementations of the program counted the instances of words in fifty paragraphs (with a total length of 2261 words) of Lorem Ipsum. They were run on the same machine with hardware to support twelve threads. Ten executions of each implementation were conducted, with the duration measured by the built-in Linux \texttt{time} command. A call graph for both implementations was generated using Valgrind's Callgrind tool.
 \subsection{Single-threaded implementation}
