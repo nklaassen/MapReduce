@@ -8,5 +8,7 @@ add_subdirectory(MapReducer)
 
 add_executable (wordcount wordcount.cpp)
 add_executable (matrixmult matrixmult.cpp)
+add_executable (sort sort.cpp)
 target_link_libraries (wordcount MapReducer)
 target_link_libraries (matrixmult MapReducer)
+target_link_libraries (sort MapReducer)
