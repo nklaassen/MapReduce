@@ -1,5 +1,5 @@
 \documentclass[12pt, letterpaper]{article}
-\usepackage[margin=2.5cm]{geometry}
+\usepackage[margin=2.4cm]{geometry} % reduced from 2.5 cm to fit table 1 nicely
 \usepackage{times}
 \usepackage{graphicx}
 \usepackage[utf8]{inputenc}
@@ -107,7 +107,6 @@
 	The four- and twelve-threaded MapReduce implementation timings both showed a greater user time compared to system time, on average. With four threads, the mean user time was 0.0084 seconds and the mean system time was 0 seconds. With twelve threads, the mean user time was 0.0104 seconds and the mean system time was 0.0040 seconds. This meant most of the time was spent in the program, not the CPU as was the case with single-threading.
 
 	For a graphical representation of the call map for the MapReduce word count, see figure~\ref{fig:callMapMRImpl} at the end of this document.
-\newpage
 % MapReduce data (4 threads)
 	\begin{table}[h]
 	\centering
