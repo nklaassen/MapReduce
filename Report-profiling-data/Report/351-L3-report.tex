@@ -26,7 +26,9 @@
 \section{Word count efficiency}
 	Both implementations of the program counted the instances of words in fifty paragraphs (with a total length of 2261 words) of Lorem Ipsum. They were run on the same machine with hardware to support twelve threads. Ten executions of each implementation were conducted, with the duration measured by the built-in Linux \texttt{time} command. A call graph for both implementations was generated using Valgrind's Callgrind tool.
 \subsection{Single-threaded implementation}
-	The single-threaded implementation of the word count ran for a mean wall time of 0.0140 seconds.
+	The single-threaded implementation of the word count ran for a mean wall time of 0.0140 seconds. Table 1 below shows the execution time, as well as CPU usage, for each of the ten single-threaded word count runs.\newline
+	
+	See Figure 2 for a graphical representation of the call map.
 
 	\begin{table}[h]
 	\centering
@@ -53,7 +55,9 @@
 	\caption{Duration of single-threaded implementation measured by \texttt{time}}
 	\end{table}
 \subsection{MapReduce implementation}
-	The MapReduce implementation of the word count was tested with four threads and then the full twelve threads the machine was capable of supporting. Note that the greater the quantity of threads used to multithread, the slower the program execution became. As the thread count increased, the CPU usage also appeared to increase, going from an average of 10\% with four threads to an average of 40\% with 12 threads.
+	The MapReduce implementation of the word count was tested with four threads and then the full twelve threads the machine was capable of supporting. Tables 2 and 3 below show the execution time, as well as CPU usage, for each of the ten word counts run with MapReduce. Note that the greater the quantity of threads used to multithread, the slower the program execution became. As the thread count increased, the CPU usage also appeared to increase, going from an average of 10\% with four threads to an average of 40\% with 12 threads.\newline
+
+	See Figure 2 for a graphical representation of the call map.
 
 	\begin{table}[h]
 	\centering
@@ -107,4 +111,16 @@
 	Data that needs sorting?
 \section{Impact of using multiple machines on execution speed}
 	
+\newpage
+	\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.35\textwidth, angle=90]{call-graph-part3-cropped}
+	\caption{Call map for single-threaded implementation of word count}
+	\end{figure}
+\newpage
+	\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.35\textwidth, angle=90]{call-graph-part4-cropped}
+	\caption{Call map for MapReduce implementation of word count (twelve threads)}
+	\end{figure}
 \end{document}
