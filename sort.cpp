@@ -1,4 +1,4 @@
-#include "MapReducer.h"
+#include "MapReducer/MapReducer.hpp"
 
 #include <iostream>
 #include <functional>
@@ -61,7 +61,7 @@ void outputer(vector<pair<int, VecView>> sortedChunks)
 
 int main()
 {
-	MapReducer<VecView, int, VecView, int, VecView> sorter(
+	MapReducer<VecView, int, VecView, int, VecView, VecView> sorter(
 			inputReader,
 			mapper,
 			reducer,
