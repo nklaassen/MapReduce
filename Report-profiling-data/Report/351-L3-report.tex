@@ -29,13 +29,13 @@
 	In the reduce stage, pairs of sorted chunks of the original array are merged into 2 chunks of size $ n/2 $, these 2 merges are also completed in parallel.
 	A potential bottleneck in this implementation is the output stage, which must do a final merge of the last 2 chunks of size $ n/2 $.
 
-	In the limit, this algorithm can theoritically achieve a 4x speedup over a traditional merge sort based on equation~\ref{eq:sort}.
+	In the limit, this algorithm can theoretically achieve a 4x speedup over a traditional merge sort based on equation~\ref{eq:sort}.
 	\begin{equation} \label{eq:sort}
 	\lim_{n\to\infty} \frac{\frac{n\log{n} - 2n}{4} + \frac{n}{2} + n}{n\log{n}} = \frac{1}{4}
 	\end{equation}
 	Intuitively, only $O(n)$ work needs to be done sequentially in the 2 merge steps, while the rest of the $O(n\log{n})$ sort is done concurrently on 4 cores.
 
-\subsection{Speed Comparison vs \texttt{std::sort}}
+\subsection{Speed Comparison vs. \texttt{std::sort}}
 	In practice, our algorithm achieved a 2.13x speedup over a single-threaded \texttt{std::sort}, on arrays of size 100,000 to 400,000.
 	While somewhat less than predicted, this level of speedup is fairly good considering the degree of optimization in \texttt{std::sort} and the typical losses involved with threading.
 	Timing data for our MapReduce sort vs \texttt{std::sort} on various array sizes is shown in figure~\ref{fig:sort-timing}. Times are averaged over 100 runs.
@@ -48,7 +48,7 @@
 
 \subsection{Compared with Word Count}
 	The main reason this algorithm is a better fit for MapReduce than word count is that it does much more of its work in the map and reduce stages, which are executed in parallel.
-	We analyzed this behaviour in callgrind and found that our MapReduce sorting algorithm does over 85\% of its computation in the map stage.
+	We analyzed this behaviour in Callgrind and found that our MapReduce sorting algorithm does over 85\% of its computation in the map stage.
 	A complete breakdown is shown in table~\ref{table:sortVwordcount}.
 
 	\begin{table}[!h]\centering
@@ -65,7 +65,7 @@
 
 
 \section{Word count efficiency}
-	Both implementations of the program counted the instances of unique words (including capitalization and adjacent punctuation marks) in \textit{Moby Dick; Or, The Whale} by Herman Melville, which is 2.1MB of text. They were run on the same machine with hardware to support twelve threads. Ten executions of each following implementations were conducted, with the duration and CPU usage measured with the built-in Linux \texttt{time} command:
+	Both implementations of the program counted the instances of unique words (including capitalization and adjacent punctuation marks) in \textit{Moby Dick; Or, The Whale} by Herman Melville, which is 2.1MB of text. They were run on the same machine with hardware to support twelve threads. Ten executions of each of the following implementations were conducted, with the duration and CPU usage measured with the built-in Linux \texttt{time} command:
 	\begin{itemize}
 	\item{single-threaded}
 	\item{MapReduce, 4 threads}
@@ -167,13 +167,13 @@
 	The single-threaded implementation came in with a mean wall time of 0.8460 seconds, the four-threaded MapReduce implementation with a mean wall time of 0.9440 seconds, and the twelve-threaded MapReduce implementation with a mean wall time of 0.9610 seconds.
 	
 \section{Alternate Workload}
-In addition to the sort program, a matrix multiplication algorithm was also adapted to the MapReduce interface . The algorithm is described in detail in the blog post “Matrix Multiplication with MapReduce”\footnote{https://lendap.wordpress.com/2015/02/16/matrix-multiplication-with-mapreduce/}
+In addition to the sort program, a matrix multiplication algorithm was also adapted to the MapReduce interface. The algorithm is described in detail in the blog post “Matrix Multiplication with MapReduce”\footnote{https://lendap.wordpress.com/2015/02/16/matrix-multiplication-with-mapreduce/}
 
-The algorithm is intended for multiplying very large, sparse matrices (hundreds of thousands or millions or rows and columns) and distributing the task over many machines. Because of the permutative nature of matrix multiplication this requires significant duplication of data. The mapper stage copies every element of A for every column in B and every element in B for every row in A. Mapreduce makes this copying necessary because each worker in the reduce stage has access only to it’s individual piece of the data. 
+The algorithm is intended for multiplying very large, sparse matrices (hundreds of thousands or millions of rows and columns) and distributing the task over many machines. Because of the permutative nature of matrix multiplication this requires significant duplication of data. The mapper stage copies every element of A for every column in B and every element in B for every row in A. MapReduce makes this copying necessary because each worker in the reduce stage has access only to its individual piece of the data. 
 
-On a single machine, in a multithreaded context, the mapreduce matrix multiplication operation took ~100 times as long as the implementation found in the NumPy numerical computation package for Python, for a 100x100 matrix. Naturally, it also consumed significantly more memory. 
+On a single machine, in a multi-threaded context, the MapReduce matrix multiplication operation took ~100 times as long as the implementation found in the NumPy numerical computation package for Python, for a 100x100 matrix. Naturally, it also consumed significantly more memory. 
 
-In a distributed system, the workers cannot share memory, so the copying done by the mapreduce method is likely a lower bound on the amount of copying necessary for any distributed method. Since the workers are responsible for the copying, each value only needs to be transmitted once in the input stage. 
+In a distributed system, the workers cannot share memory, so the copying done by the MapReduce method is likely a lower bound on the amount of copying necessary for any distributed method. Since the workers are responsible for the copying, each value only needs to be transmitted once in the input stage. 
 
 	
 \section{Most appropriate workload for MapReduce}
