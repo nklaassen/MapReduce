@@ -76,7 +76,7 @@
 	Table~\ref{table:singleImplWC} below shows the execution time, as well as CPU usage, for each of the ten single-threaded word count runs. The word count program ran for a mean user time of 0.0986 seconds and a mean system time of 0.1647 seconds, indicating that the processing time was dominated by the system calls associated with reading and writing the file.
 	
 	For a graphical representation of the call map for the single-threaded word count, see figure~\ref{fig:callMapSingleImpl} at the end of this document.
-% single-threaded data
+% single-threaded data - Moby Dick times
 	\begin{table}[h]
 	\centering
 	\begin{tabular}{ccccc}
@@ -84,20 +84,20 @@
 	\multicolumn{5}{c}{\cellcolor[HTML]{FFFFC7}\textbf{Execution times for single-threaded word count}} \\
 	\rowcolor[HTML]{EFEFEF} 
 	run \# & user (s) & system (s) & wall (s) & CPU usage (\%) \\
-	1 & 0 & 0.004 & 0 & 0 \\
-	2 & 0 & 0.008 & 0.01 & 0 \\
-	3 & 0.004 & 0 & 0.02 & 0 \\
-	4 & 0 & 0.004 & 0.01 & 0 \\
-	5 & 0 & 0.004 & 0.01 & 0 \\
-	6 & 0.004 & 0 & 0.01 & 0 \\
-	7 & 0 & 0.004 & 0.02 & 0 \\
-	8 & 0.004 & 0 & 0.01 & 0 \\
-	9 & 0.004 & 0 & 0.04 & 0 \\
-	10 & 0 & 0.004 & 0.01 & 0 \\
+	1 & 0.106 & 0.160 & 0.860 & 30.2 \\
+	2 & 0.097 & 0.161 & 0.860 & 29.0 \\
+	3 & 0.098 & 0.161 & 0.860 & 29.0 \\
+	4 & 0.084 & 0.181 & 0.860 & 30.2 \\
+	5 & 0.099 & 0.162 & 0.860 & 29.0 \\
+	6 & 0.091 & 0.167 & 0.860 & 29.0 \\
+	7 & 0.114 & 0.154 & 0.860 & 30.2 \\
+	8 & 0.093 & 0.168 & 0.720 & 34.7 \\
+	9 & 0.108 & 0.164 & 0.860 & 30.2 \\
+	10 & 0.096 & 0.169 & 0.860 & 29.0 \\
 	\rowcolor[HTML]{D0F0D0} 
-	\multicolumn{1}{r}{\cellcolor[HTML]{9AFF99}mean (s)} & 0.0016 & 0.0028 & 0.0140 & 0 \\
+	\multicolumn{1}{r}{\cellcolor[HTML]{9AFF99}mean (s)} & 0.0986 & 0.1647 & 0.8460 & 30.05 \\
 	\rowcolor[HTML]{ECF4FF} 
-	\multicolumn{1}{r}{\cellcolor[HTML]{DAE8FC}std. dev. (s)} & 0.0021 & 0.0027 & 0.0107 & 0
+	\multicolumn{1}{r}{\cellcolor[HTML]{DAE8FC}std. dev. (s)} & 0.0088 & 0.0072 & 0.0443 & 1.739
 	\end{tabular}
 	\caption{Duration of single-threaded implementation measured by \texttt{time}\label{table:singleImplWC}}
 	\end{table}
@@ -114,50 +114,50 @@
 	However, both system \textit{and} user time were greater in the MapReduce implementation than the single-threaded implementation.
 
 	For a graphical representation of the call map for the MapReduce word count, see figure~\ref{fig:callMapMRImpl} at the end of this document.
-% MapReduce data (4 threads)
+% MapReduce data (4 threads) - Moby Dick times
 	\begin{table}[h]
 	\centering
 	\begin{tabular}{ccccc}
 	\multicolumn{5}{c}{\cellcolor[HTML]{FFFFC7}\textbf{Execution times for MapReduce word count - 4 threads}} \\
 	\cellcolor[HTML]{EFEFEF}run \# & \cellcolor[HTML]{EFEFEF}user (s) & \cellcolor[HTML]{EFEFEF}system (s) & 				\cellcolor[HTML]{EFEFEF}wall (s) & \cellcolor[HTML]{EFEFEF}CPU usage (\%) \\
-	1 & 0.008 & 0 & 0.02 & 0 \\
-	2 & 0.008 & 0 & 0.03 & 0 \\
-	3 & 0.008 & 0 & 0.02 & 0 \\
-	4 & 0.008 & 0 & 0.02 & 0 \\
-	5 & 0.008 & 0 & 0.01 & 0 \\
-	6 & 0.008 & 0 & 0.02 & 0 \\
-	7 & 0.008 & 0 & 0.01 & 0 \\
-	8 & 0.008 & 0 & 0.02 & 0 \\
-	9 & 0.008 & 0 & 0.03 & 0 \\
-	10 & 0.012 & 0 & 0.01 & 100 \\
+	1 & 0.206 & 0.215 & 0.93 & 44.0 \\
+	2 & 0.225 & 0.213 & 0.95 & 45.2 \\
+	3 & 0.231 & 0.178 & 0.99 & 40.4 \\
+	4 & 0.236 & 0.187 & 0.94 & 43.6 \\
+	5 & 0.211 & 0.211 & 0.94 & 44.6 \\
+	6 & 0.215 & 0.203 & 0.96 & 42.7 \\
+	7 & 0.231 & 0.195 & 0.95 & 44.2 \\
+	8 & 0.212 & 0.200 & 0.99 & 41.4 \\
+	9 & 0.210 & 0.210 & 0.81 & 51.8 \\
+	10 & 0.243 & 0.167 & 0.98 & 40.8 \\
 	\rowcolor[HTML]{D0F0D0} 
-	\multicolumn{1}{r}{\cellcolor[HTML]{9AFF99}mean (s)} & 0.0084 & 0 & 0.0190 & 10.0000 \\
+	\multicolumn{1}{r}{\cellcolor[HTML]{9AFF99}mean (s)} & 0.2220 & 0.1979 & 0.9440 & 43.87 \\
 	\rowcolor[HTML]{ECF4FF} 
-	\multicolumn{1}{r}{\cellcolor[HTML]{DAE8FC}std. dev. (s)} & 0.0013 & 0 & 0.0074 & 31.6228
+	\multicolumn{1}{r}{\cellcolor[HTML]{DAE8FC}std. dev. (s)} & 0.0128 & 0.0161 & 0.0517 & 3.237
 	\end{tabular}
 	\caption{Duration of MapReduce implementation measured by \texttt{time}, with four threads\label{table:MR4ImplWC}}
 	\end{table}
-% MapReduce data (12 threads)
+% MapReduce data (12 threads) - Moby Dick times
 	\begin{table}[h]
 	\centering
 	\begin{tabular}{ccccc}
 	\multicolumn{5}{c}{\cellcolor[HTML]{FFFFC7}\textbf{Execution times for MapReduce word count - 12 threads}} \\
 	\rowcolor[HTML]{EFEFEF} 
 	run \# & user (s) & system (s) & wall (s) & CPU usage (\%) \\
-	1 & 0.008 & 0.004 & 0.01 & 0 \\
-	2 & 0.008 & 0.008 & 0.03 & 0 \\
-	3 & 0.008 & 0.008 & 0.01 & 0 \\
-	4 & 0.008 & 0.004 & 0.01 & 0 \\
-	5 & 0.016 & 0 & 0.01 & 100 \\
-	6 & 0.008 & 0.004 & 0.01 & 0 \\
-	7 & 0.012 & 0.004 & 0.01 & 100 \\
-	8 & 0.008 & 0.008 & 0.01 & 0 \\
-	9 & 0.012 & 0 & 0.01 & 100 \\
-	10 & 0.016 & 0 & 0.01 & 100 \\
+	1 & 0.305 & 0.232 & 1.02 & 51.9 \\
+	2 & 0.277 & 0.255 & 0.94 & 55.3 \\
+	3 & 0.348 & 0.213 & 0.95 & 57.8 \\
+	4 & 0.347 & 0.206 & 0.97 & 55.6 \\
+	5 & 0.331 & 0.198 & 0.94 & 55.3 \\
+	6 & 0.310 & 0.219 & 0.96 & 54.1 \\
+	7 & 0.293 & 0.238 & 0.98 & 53.0 \\
+	8 & 0.302 & 0.239 & 0.96 & 55.2 \\
+	9 & 0.265 & 0.274 & 0.94 & 56.3 \\
+	10 & 0.331 & 0.213 & 0.95 & 56.8 \\
 	\rowcolor[HTML]{D0F0D0} 
-	\multicolumn{1}{r}{\cellcolor[HTML]{9AFF99}mean (s)} & 0.0104 & 0.0040 & 0.0120 & 40.0000 \\
+	\multicolumn{1}{r}{\cellcolor[HTML]{9AFF99}mean (s)} & 0.3109 & 0.2287 & 0.9610 & 55.13 \\
 	\rowcolor[HTML]{ECF4FF} 
-	\multicolumn{1}{r}{\cellcolor[HTML]{DAE8FC}std. dev. (s)} & 0.0034 & 0.0033 & 0.0063 & 51.6398
+	\multicolumn{1}{r}{\cellcolor[HTML]{DAE8FC}std. dev. (s)} & 0.0282 & 0.0236 & 0.0247 & 1.751
 	\end{tabular}
 	\caption{Duration of MapReduce implementation measured by \texttt{time}, with twelve threads\label{table:MR12ImplWC}}
 	\end{table}
@@ -189,13 +189,13 @@ The primary difference between a multi-machine implementation and a local, multi
 \newpage
 	\begin{figure}[h]
 	\centering
-	\includegraphics[width=1.35\textwidth, angle=90]{call-graph-part3-cropped}
+	\includegraphics[width=1.35\textwidth, angle=90]{call-graph-part3-final-cropped}
 	\caption{Call map for single-threaded implementation of word count\label{fig:callMapSingleImpl}}
 	\end{figure}
 \newpage
 	\begin{figure}[h]
 	\centering
-	\includegraphics[width=1.35\textwidth, angle=90]{call-graph-part4-cropped}
+	\includegraphics[width=1.35\textwidth, angle=90]{call-graph-part4-final-cropped}
 	\caption{Call map for MapReduce implementation of word count (twelve threads)\label{fig:callMapMRImpl}}
 	\end{figure}
 \end{document}
