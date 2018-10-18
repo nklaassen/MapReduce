@@ -65,7 +65,7 @@
 
 
 \section{Word count efficiency}
-	Both implementations of the program counted the instances of unique words (including capitalization and adjacent punctuation marks) in fifty paragraphs of Lorem Ipsum, which is 2261 words in length. They were run on the same machine with hardware to support twelve threads. Ten executions of each following implementations were conducted, with the duration and CPU usage measured with the built-in Linux \texttt{time} command:
+	Both implementations of the program counted the instances of unique words (including capitalization and adjacent punctuation marks) in \textit{Moby Dick; Or, The Whale} by Herman Melville, which is 2.1MB of text. They were run on the same machine with hardware to support twelve threads. Ten executions of each following implementations were conducted, with the duration and CPU usage measured with the built-in Linux \texttt{time} command:
 	\begin{itemize}
 	\item{single-threaded}
 	\item{MapReduce, 4 threads}
@@ -73,7 +73,7 @@
 	\end{itemize}
 	Additionally, call graphs for the single-threaded and MapReduce implementations were generated using Valgrind's Callgrind tool and visualized using KCachegrind.
 \subsection{Single-threaded implementation}
-	Table~\ref{table:singleImplWC} below shows the execution time, as well as CPU usage, for each of the ten single-threaded word count runs. The word count program ran for a mean user time of 0.0016 seconds and a mean system time of 0.0028 - almost twice as long. This indicates that a great deal more time was spent by the CPU executing calls than in the program itself, which is consistent with single-threading. Since only one thread is tasked with carrying out many instructions, more time must be spent processing.
+	Table~\ref{table:singleImplWC} below shows the execution time, as well as CPU usage, for each of the ten single-threaded word count runs. The word count program ran for a mean user time of 0.0986 seconds and a mean system time of 0.1647 seconds, indicating that the processing time was dominated by the system calls associated with reading and writing the file.
 	
 	For a graphical representation of the call map for the single-threaded word count, see figure~\ref{fig:callMapSingleImpl} at the end of this document.
 % single-threaded data
@@ -102,9 +102,16 @@
 	\caption{Duration of single-threaded implementation measured by \texttt{time}\label{table:singleImplWC}}
 	\end{table}
 \subsection{MapReduce implementation}
-	The MapReduce implementation of the word count was tested with four threads and then the full twelve threads the machine was capable of supporting. Tables~\ref{table:MR4ImplWC} and~\ref{table:MR12ImplWC} below show the execution time, as well as CPU usage, for each of the ten word counts run with MapReduce with four and twelve threads, respectively. Note that the greater the quantity of threads used to multithread, the slower the program execution becomes. Further, as the thread count increased, the CPU usage also appeared to increase, going from an average of 10\% with four threads to an average of 40\% with 12 threads.
+	The MapReduce implementation of the word count was tested with four threads and then the full twelve threads the machine was capable of supporting.
+	Tables~\ref{table:MR4ImplWC} and~\ref{table:MR12ImplWC} below show the execution time, as well as CPU usage, for each of the ten word counts run with MapReduce with four and twelve threads, respectively.
+	Note that for a greater number of threads, the program actually took slightly longer to complete.
+	Further, as the thread count increased, the CPU usage also increased, going from an average of 43.87\% with four threads to an average of 55.13\% with 12 threads.
 
-	The four- and twelve-threaded MapReduce implementation timings both showed a greater user time compared to system time, on average. With four threads, the mean user time was 0.0084 seconds and the mean system time was 0 seconds. With twelve threads, the mean user time was 0.0104 seconds and the mean system time was 0.0040 seconds. This meant most of the time was spent in the program, not the CPU as was the case with single-threading.
+	The four- and twelve-threaded MapReduce implementation timings both showed a greater user time compared to system time, on average.
+	With four threads, the mean user time was 222 milliseconds and the mean system time was 198 milliseconds.
+	With twelve threads, the mean user time was 311 milliseconds and the mean system time was 229 milliseconds.
+	This meant most of the time was spent in the program rather than system calls, as was the case with single-threading.
+	However, both system \textit{and} user time were greater in the MapReduce implementation than the single-threaded implementation.
 
 	For a graphical representation of the call map for the MapReduce word count, see figure~\ref{fig:callMapMRImpl} at the end of this document.
 % MapReduce data (4 threads)
@@ -155,7 +162,9 @@
 	\caption{Duration of MapReduce implementation measured by \texttt{time}, with twelve threads\label{table:MR12ImplWC}}
 	\end{table}
 \subsection{Comparison}
-	An increase in threads used in the implementation of word counts appears to correspond with a decrease in time spent performing CPU calls and an increase in time spent in the program itself. As for wall time, there was not a clear difference between implementations - the single-threaded implementation came in with a mean wall time of 0.0140 seconds, the four-threaded MapReduce implementation with a mean wall time of 0.0190 seconds, and the twelve-threaded MapReduce implementation with a mean wall time of 0.0120 seconds.
+	An increase in threads used in the implementation of word counts appears to correspond with higher overall CPU usage, processing time, and wall time.
+	This indicates that for the word count problem, MapReduce succeeds only in making more work for itself, while failing to reap any of the potential benefits of parallelism.
+	The single-threaded implementation came in with a mean wall time of 0.8460 seconds, the four-threaded MapReduce implementation with a mean wall time of 0.9440 seconds, and the twelve-threaded MapReduce implementation with a mean wall time of 0.9610 seconds.
 	
 \section{Alternate Workload}
 In addition to the sort program, a matrix multiplication algorithm was also adapted to the MapReduce interface . The algorithm is described in detail in the blog post “Matrix Multiplication with MapReduce”\footnote{https://lendap.wordpress.com/2015/02/16/matrix-multiplication-with-mapreduce/}
