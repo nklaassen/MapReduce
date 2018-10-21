@@ -6,20 +6,9 @@
 #include <utility>
 #include <map>
 #include <thread>
+#include <omp.h>
 
 using namespace std;
-
-const int k_numThreads = 4;
-void distribute(function<void(int)> f)
-{
-	vector<thread> threads;
-	for (int threadNum = 0; threadNum < k_numThreads; threadNum++) {
-		threads.emplace_back([=] { f(threadNum); });
-	}
-	for (auto &thread : threads) {
-		thread.join();
-	}
-}
 
 template <class Input, class Key1, class Val1, class Key2, class Val2, class Val3>
 class MapReducer
@@ -42,17 +31,17 @@ class MapReducer
 
 		void mapReduce(Input input)
 		{
+			// Input stage
 			vector<pair<Key1, Val1>> inputs = inputReader(move(input));
 
 			// Map stage
 			vector<pair<Key2, Val2>> mapOutputs[inputs.size()]; // array of vectors
-			distribute([&](int offset) {
-				for (size_t i = offset; i < inputs.size(); i += k_numThreads) {
-					mapOutputs[i] = mapper(inputs[i].first, move(inputs[i].second));
-				}
-			});
+#pragma omp parallel for
+			for (size_t i = 0; i < inputs.size(); i++) {
+				mapOutputs[i] = mapper(inputs[i].first, move(inputs[i].second));
+			}
 
-			// Shuffle stage
+			// Shuffle stage, group map outputs by key
 			map<Key2, vector<Val2>> mapOutputGroups;
 			for (auto &mapOutput : mapOutputs) {
 				for (auto &k2v2 : mapOutput) {
@@ -62,14 +51,19 @@ class MapReducer
 
 			// Reduce stage
 			vector<pair<Key2, Val3>> outputs(mapOutputGroups.size());
-			distribute([&](int offset) {
+#pragma omp parallel
+			{
+				const int offset = omp_get_thread_num();
+				const int stride = omp_get_num_threads();
 				auto mapOutputGroup = mapOutputGroups.begin();
 				advance(mapOutputGroup, offset);
-				for (size_t i = offset; i < mapOutputGroups.size(); i += k_numThreads) {
+				for (size_t i = offset; i < mapOutputGroups.size(); i += stride) {
 					outputs[i] = reducer(mapOutputGroup->first, move(mapOutputGroup->second));
-					advance(mapOutputGroup, k_numThreads);
+					advance(mapOutputGroup, stride);
 				}
-			});
+			}
+
+			// Output stage
 			outputer(move(outputs));
 		}
 
