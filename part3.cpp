@@ -45,7 +45,7 @@ bool sortByCount(const pair<string, int> &a,
 }
 void printCount(vector<pair<string, int> > &talliedVector) {
 	sort(talliedVector.begin(),talliedVector.end(),sortByCount);
-	for (int i = 0; i < talliedVector.size(); i++)
+	for (size_t i = 0; i < talliedVector.size(); i++)
 	{
 		cout << talliedVector[i].first << ":\t" << talliedVector[i].second << endl;
 	}
