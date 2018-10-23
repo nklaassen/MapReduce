@@ -35,11 +35,13 @@ class MapReducer
 			vector<pair<Key1, Val1>> inputs = inputReader(move(input));
 
 			// Map stage
-			vector<pair<Key2, Val2>> mapOutputs[inputs.size()]; // array of vectors
+			vector<vector<pair<Key2, Val2>>> mapOutputs(inputs.size()); // vector of vectors
 #pragma omp parallel for
 			for (size_t i = 0; i < inputs.size(); i++) {
 				mapOutputs[i] = mapper(inputs[i].first, move(inputs[i].second));
 			}
+
+			inputs.resize(0); // don't need this anymore, could be quite large
 
 			// Shuffle stage, group map outputs by key
 			map<Key2, vector<Val2>> mapOutputGroups;
@@ -48,6 +50,8 @@ class MapReducer
 					mapOutputGroups[k2v2.first].push_back(k2v2.second);
 				}
 			}
+
+			mapOutputs.resize(0); // don't need this anymore, could be quite large
 
 			// Reduce stage
 			vector<pair<Key2, Val3>> outputs(mapOutputGroups.size());
