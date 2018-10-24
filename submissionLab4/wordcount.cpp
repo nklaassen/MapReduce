@@ -42,7 +42,7 @@ void outputer(vector<pair<string, int>> wordCounts)
 
 int main(int argc, char **argv)
 {
-	string filename = "wordcount.cpp";
+	string filename = "Moby-Dick.txt";
 	ifstream input(filename);
 	if (input.fail()) {
 		cerr << "failed to open file: " << filename << endl;
